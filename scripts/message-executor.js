@@ -1,72 +1,56 @@
 /*
 TODO
 better syntax for message block commands, the current one sucks and doesn't allow variables
-sense if js function is a loop, terminate to avoid crashing
+check if js function is a loop, terminate to avoid crashing
 */
 
+/* To create a method from outside, use the following format
+
+name: [function, ["string", arg1 type, arg2 type ...]]    //messageBlock doesnt work without the first "string"
+
+Examples:
+
+foo: [function bar(messageBlock) {print(messageBlock + " This function was called from a message block")
+}, ["string"]],,
+
+examplenull: [function out(messageBlock) {
+print(messageBlock+ " This method has no args")
+}, ["string"]],
+
+examplenumber: [function out(messageBlock, value) {
+    print(messageBlock+ " The number is " + value)
+}, ["string"]],
+
+examplemultiargs: [function out(messageBlock, a, b) {
+    print(messageBlock+ " The args are " + a +" and "+ b)
+}, 
+["string", "number", "string"]]
+
+*/
+/*
+die: [function die(){
+    selfDestruct = true
+    return null
+}]
+*/
+
+Vars.tree.get("commands/commands.json").writeString('{"listCommands": []}')
+
+var methods = {
+
+}
 
 const stuff = {
 
     evalulateMessage (messageBlock, string){
+
+        let listCommands = JSON.parse(Vars.tree.get("commands/commands.json").readString()).listCommands
 
         /* This method allows for calling some functions from message blocks */
 
         const header = "#!run/"
 
         if (string.slice(0,6) != header) {return}
-        
-        /* The format for functions is as follows
-
-        name: [function, [arg1Type, arg2Type ...]]
-
-        Examples:
-
-        foo: [function bar() {print("This function was called from a message block")
-        }],
-
-        examplenull: [function out() {
-        print(messageBlock+ " This method has no args")
-        }],
-
-        examplenumber: [function out(value) {
-            print(messageBlock+ " The number is " + value)
-        }],
-
-        examplemultiargs: [function out(a, b) {
-            print(messageBlock+ " The args are " + a +" and "+ b)
-        }, 
-        ["number", "string"]]
-
-        */
-
-        let selfDestruct = false
-
-        const methods = {
-
-            js: [function jsfunc(javascript){    /*TO FIX unterminated loops will crash the game*/
-                try{
-
-                    eval(javascript)
-                    print(messageBlock+ " Executed: ")
-
-                } catch(exception) {
-                    if((exception instanceof InternalError)) {
-
-                        print(messageBlock+ "[ERROR] Cannot evaluate functions within message block")
-
-                    } else {
-
-                        print(messageBlock+ " "+ exception)
-                    }
-                } return null
-            }, 
-            ["string"]],
-
-            die: [function die(){
-                selfDestruct = true
-                return null
-            }]
-        }
 
         let args = string.slice(6).split("/")
         let argNumber
@@ -85,7 +69,7 @@ const stuff = {
                     inputType = [null]
                 }
 
-                let commandArgs = []
+                let commandArgs = [messageBlock]
 
                 if(inputType != null) {
 
@@ -93,6 +77,10 @@ const stuff = {
 
                         i++
                         let value = args[i]
+                        if (value == null) {
+                            print(messageBlock + " [ERROR] "+"Missing args")
+                            return
+                        }
                         commandArgs.push(value)
                     }
                     
@@ -100,8 +88,8 @@ const stuff = {
 
                         command.apply(this, commandArgs)
 
-                        if(selfDestruct == true) {
-                            messageBlock.message.delete(5,2147483647)
+                        if(/*selfDestruct == true*/ true) {
+                            messageBlock.message.delete(0,5)
                             print(messageBlock + " Deleted")
                         }
 
@@ -113,20 +101,31 @@ const stuff = {
                 } else{
                     command()   /*execute no args*/
 
-                    if(selfDestruct == true) {
-                        messageBlock.message.delete(5,2147483647)
+                    if(/*selfDestruct == true*/ true) {
+                        messageBlock.message.delete(0,5)
                         print(messageBlock + " Deleted")
                     }
                 }
             } catch(exception){
-
-                    print(messageBlock+' [ERROR] Message block command #"' + argNumber +" "+ args[argNumber] +'" does not exist')
+                var sus = false;
+                var BreakException = {};
+                try {
+                    args.forEach(arg => {
+                        if(listCommands.includes(arg)) {
+                            sus = true
+                            throw BreakException}
+                    })
+                } catch (e) {
+                    if (e !== BreakException) {print(e)}
+                }
+                if (sus == false) {print(exception)}
+                    //print(messageBlock+' [ERROR] Message block command #"' + argNumber +" "+ args[argNumber] +'" does not exist')
 
             }
         }
     },
 
-    messageReader() {
+    readMessages() {
 
         Vars.indexer.allBuildings(
 
@@ -142,6 +141,22 @@ const stuff = {
                 }
             }
         )
+    },
+
+    addCommand(name, func) {
+        methods[name] = func
+
+        let prevObject = JSON.parse(Vars.tree.get("commands/commands.json").readString())
+        let listCommands = prevObject.listCommands
+        listCommands.push(name)
+        let newObject = JSON.stringify(prevObject)
+        Vars.tree.get("commands/commands.json").writeString(newObject)
+
+        print("Added command " + name)
+    },
+
+    printMethods() {
+        Object.keys(methods).forEach(p => print(p))
     }
 }
 

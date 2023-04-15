@@ -1,7 +1,7 @@
 /*
 TODO
+execute all commands from other mods through this mod, currently all dependent mods need to call readMessages() every tick
 better syntax for message block commands, the current one sucks and doesn't allow variables
-check if js function is a loop, terminate to avoid crashing
 */
 
 /* To create a method from outside, use the following format
@@ -36,9 +36,7 @@ die: [function die(){
 
 Vars.tree.get("commands/commands.json").writeString('{"listCommands": []}')
 
-var methods = {
-
-}
+var methods = {}
 
 const stuff = {
 
@@ -118,9 +116,9 @@ const stuff = {
                 } catch (e) {
                     if (e !== BreakException) {print(e)}
                 }
-                if (sus == false) {print(exception)}
-                    //print(messageBlock+' [ERROR] Message block command #"' + argNumber +" "+ args[argNumber] +'" does not exist')
-
+                if (sus == false) {
+                    print(messageBlock+' [ERROR] Message block command #"' + argNumber +" "+ args[argNumber] +'" does not exist')
+                }
             }
         }
     },

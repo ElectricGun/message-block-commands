@@ -35,6 +35,8 @@ const stuff = {
 
         let commandString = string.slice(header.length)
         let tokens = this.splitMulti(commandString, punctuation)
+        //messageBlock.message.delete(0, header.length)
+        //if (debugMode) print(messageBlock + " Deleted")
 
         // Parse tokens
 
@@ -144,38 +146,36 @@ const stuff = {
                 print(messageBlock + " [ERROR] " + "Missing arguments. " + "Expecting: " + (command.length - 1 ) + " Current: " + (args.length - 1))
                 return
             } else if (args.length > command.length) {
-                print(mmessageBlock + " [ERROR] " + "Too many arguments. " + "Expecting: " + (command.length - 1) + " Current: " + (args.length - 1))
+                print(messageBlock + " [ERROR] " + "Too many arguments. " + "Expecting: " + (command.length - 1) + " Current: " + (args.length - 1))
                 return
             }
-            for(let i = 0; i < args.length; i++) {
+            try{
 
-                try{
-                    if(args.length > 0) {
-                        try{
+                if(args.length > 0) {
+                        //    Call function with args
+                        command.apply(this, args)
 
-                            command.apply(this, args)
-
-                            if(true) {
-                                messageBlock.message.delete(0, header.length)
-                                if (debugMode) print(messageBlock + " Deleted")
-                            }
-
-                        } catch(exception) {
-
-                            print(messageBlock + " [ERROR] " + exception)
-                        }
-                        
-                    } else{
-                        command()   // execute no args
-
-                        if(true) {
+                        if(true) {    //for later
+                            
                             messageBlock.message.delete(0, header.length)
                             if (debugMode) print(messageBlock + " Deleted")
+                            
                         }
-                    }
-                } catch(exception){
+                } else{
+                    //    Call function without args
+                    command()
 
+                    if(true) {    //for later
+                        
+                        messageBlock.message.delete(0, header.length)
+                        if (debugMode) print(messageBlock + " Deleted")
+                        
+                    }
+                    return
                 }
+
+            } catch(exception){
+                if(debugMode) print(exception)
             }
         } catch(e) {
             var sus = false;
@@ -192,7 +192,9 @@ const stuff = {
                 }
             }
             if (sus == false) {
-                print(messageBlock + " [ERROR] Message block command does not exist")
+                print(e)
+                print(e.stack)
+                //print(messageBlock + " [ERROR] Message block command does not exist")
             }
         }
     },

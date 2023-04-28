@@ -1,124 +1,198 @@
 /*
 TODO
-execute all commands from other mods through this mod, currently all dependent mods need to call readMessages() every tick
-better syntax for message block commands, the current one sucks and doesn't allow variables
-*/
-
-/* To create a method from outside, use the following format
-
-name: [function, ["string", arg1 type, arg2 type ...]]    //messageBlock doesnt work without the first "string"
-
-Examples:
-
-foo: [function bar(messageBlock) {print(messageBlock + " This function was called from a message block")
-}, ["string"]],,
-
-examplenull: [function out(messageBlock) {
-print(messageBlock+ " This method has no args")
-}, ["string"]],
-
-examplenumber: [function out(messageBlock, value) {
-    print(messageBlock+ " The number is " + value)
-}, ["string"]],
-
-examplemultiargs: [function out(messageBlock, a, b) {
-    print(messageBlock+ " The args are " + a +" and "+ b)
-}, 
-["string", "number", "string"]]
-
-*/
-/*
-die: [function die(){
-    selfDestruct = true
-    return null
-}]
+stuff
 */
 
 Vars.tree.get("commands/commands.json").writeString('{"listCommands": []}')
 
 var methods = {}
+var debugMode = true
 
 const stuff = {
 
-    evalulateMessage (messageBlock, string){
+    splitMulti (string, tokens){
+        let splitChar = "split"
+        let splitChar2 = splitChar + splitChar    // to remove doubles
+        for(let i = 0; i < tokens.length; i++) {
+            let re = new RegExp(tokens[i], "g")
+            string = string.replace(re, splitChar + tokens[i] + splitChar)
+        }
+        string = string.replace(RegExp(splitChar2, "g"), splitChar)
+        string = string.split(splitChar)
+        return string;
+    },
 
+    evalulateMessage (messageBlock, string){
+        /* This method calls functions from a message block */
+        
         let listCommands = JSON.parse(Vars.tree.get("commands/commands.json").readString()).listCommands
 
-        /* This method allows for calling some functions from message blocks */
+        const header = "#!/"
+        const punctuation = [" ", "=", ","]
+        const punctuationNames = ["space", "equals", "comma"]
 
-        const header = "#!run/"
+        if (string.slice(0, header.length) != header) {return}
 
-        if (string.slice(0,6) != header) {return}
+        let commandString = string.slice(header.length)
+        let tokens = this.splitMulti(commandString, punctuation)
 
-        let args = string.slice(6).split("/")
-        let argNumber
+        // Parse tokens
 
-        for(let i = 0; i < args.length; i++) {
+        let commandRaw = []
+        for(let i = 0; i < tokens.length; i++) {
+            let token = tokens[i]
+            let commandToken = punctuation.indexOf(token)
+            if (commandToken == -1) {
+                commandToken = tokens[i]
+            }
+            if (typeof commandToken === "string") {
+                commandRaw.push(commandToken)
+            } else {
+                commandRaw.push(punctuationNames[commandToken])
+            }
+        }
+        commandRaw = commandRaw.filter((e) => {return e === 0 || e})    // remove cringe, if any
+        print(tokens)
+        print(commandRaw)
 
-            argNumber = i    /*for debug*/
+        let commandName, expectNext, error
+        let isArg = false
+        let args = []
+        let prevTokenType = "token"
+        for (let i = 0; i < commandRaw.length; i++) {
+            let currToken = commandRaw[i]
+            if (i > 0) {
+                let back = 0
+                while (true) {
+                    back += 1
+                    var prevToken = commandRaw[i - back]
+                    if (prevToken != "space") {
+                        break
+                    }
+                }
+            }
+            let nextToken
+            try {
+                let front = 0
+                while (true) {
+                    front += 1
+                    nextToken = commandRaw[i + front]
+                    if (nextToken != "space") {
+                        break
+                    }
+                }
+            } catch (e) {
+                nextToken = null
+            }
 
-            try{
+            if (currToken != "space" && currToken != expectNext && expectNext != undefined && expectNext != "arg") {
+                error = "Unexpected token"
+                break
+            } else {
+                if (debugMode) {
+                    if (currToken != "space") {
+                        print("[Iteration] " + i + " [Expecting] " + expectNext + " [Prev Token ] " + prevToken + " [Current Token] " + currToken + " [Next Token ] " + nextToken + " [Is Arg] " + isArg)
+                    } else (
+                        print("[Iteration] " + i + " Space")
+                    )
+                }
+            }
+            if (isArg == false) {
+                if (typeof currToken === "string" && commandName == undefined) {
+                    commandName = currToken
+                    expectNext = "args"
+                }
+                if (currToken == "args" && commandName != undefined) {
+                    expectNext = "equals"
+                }
+                if (prevToken == "args" && currToken == "equals") {
+                    expectNext = "arg"
+                    isArg = true
+                }
+                if (currToken == "comma" && prevTokenType == "arg") {
+                    expectNext = "arg"
+                    isArg = true
+            }
+            } else {
+                if (punctuationNames.indexOf(currToken) == -1) {
+                    args.push(currToken)
+                    prevTokenType = "arg"
+                    if (nextToken == undefined) {
+                        break
+                    }
+                    if (nextToken != "comma") {
+                        error = "Comma expected after arg"
+                        break
+                    }
+                }
+            }
+        }
 
-                let command = methods[args[i]][0]
-                let inputType
+        if (error == undefined) {
+            if (debugMode) print(messageBlock + " Parsed command!")
+        } else {
+            if (debugMode) print(error)
+            return
+        }
+
+        // Execute command
+        try {
+            let command = methods[commandName][0]
+            args.unshift(messageBlock)
+            
+            if (args.length < command.length) {
+                print(messageBlock + " [ERROR] " + "Missing arguments. " + "Expecting: " + (command.length - 1 ) + " Current: " + (args.length - 1))
+                return
+            } else if (args.length > command.length) {
+                print(mmessageBlock + " [ERROR] " + "Too many arguments. " + "Expecting: " + (command.length - 1) + " Current: " + (args.length - 1))
+                return
+            }
+            for(let i = 0; i < args.length; i++) {
+
                 try{
-                    inputType = methods[args[i]][1]
-                } catch (exception){
-                    inputType = [null]
-                }
+                    if(args.length > 0) {
+                        try{
 
-                let commandArgs = [messageBlock]
+                            command.apply(this, args)
 
-                if(inputType != null) {
+                            if(true) {
+                                messageBlock.message.delete(0, header.length)
+                                if (debugMode) print(messageBlock + " Deleted")
+                            }
 
-                    for(let p = 0; p < inputType.length; p++) {
+                        } catch(exception) {
 
-                        i++
-                        let value = args[i]
-                        if (value == null) {
-                            print(messageBlock + " [ERROR] "+"Missing args")
-                            return
+                            print(messageBlock + " [ERROR] " + exception)
                         }
-                        commandArgs.push(value)
-                    }
-                    
-                    try{
+                        
+                    } else{
+                        command()   // execute no args
 
-                        command.apply(this, commandArgs)
-
-                        if(/*selfDestruct == true*/ true) {
-                            messageBlock.message.delete(0,5)
-                            print(messageBlock + " Deleted")
+                        if(true) {
+                            messageBlock.message.delete(0, header.length)
+                            if (debugMode) print(messageBlock + " Deleted")
                         }
-
-                    } catch(exception) {
-
-                        print(messageBlock + " [ERROR] " + exception)
                     }
-                    
-                } else{
-                    command()   /*execute no args*/
+                } catch(exception){
 
-                    if(/*selfDestruct == true*/ true) {
-                        messageBlock.message.delete(0,5)
-                        print(messageBlock + " Deleted")
-                    }
                 }
-            } catch(exception){
-                var sus = false;
-                var BreakException = {};
-                try {
-                    args.forEach(arg => {
-                        if(listCommands.includes(arg)) {
-                            sus = true
-                            throw BreakException}
-                    })
-                } catch (e) {
-                    if (e !== BreakException) {print(e)}
+            }
+        } catch(e) {
+            var sus = false;
+            var BreakException = {};
+            try {
+                args.forEach(arg => {
+                    if(listCommands.includes(arg)) {
+                        sus = true
+                        throw BreakException}
+                })
+            } catch (e) {
+                if (e !== BreakException) {
+                    print(messageBlock + " [ERROR]" + e)
                 }
-                if (sus == false) {
-                    print(messageBlock+' [ERROR] Message block command #"' + argNumber +" "+ args[argNumber] +'" does not exist')
-                }
+            }
+            if (sus == false) {
+                print(messageBlock + " [ERROR] Message block command does not exist")
             }
         }
     },
@@ -150,7 +224,7 @@ const stuff = {
         let newObject = JSON.stringify(prevObject)
         Vars.tree.get("commands/commands.json").writeString(newObject)
 
-        print("Added command " + name)
+        if (debugMode) print("Added command " + name)
     },
 
     printMethods() {

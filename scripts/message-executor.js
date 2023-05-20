@@ -8,6 +8,8 @@ Vars.tree.get("commands/commands.json").writeString('{"listCommands": []}')
 var methods = {}
 var debugMode = true
 
+let header = "/"
+
 const stuff = {
 
     splitMulti (string, tokens){
@@ -24,8 +26,6 @@ const stuff = {
 
     evalulateMessage (messageBlock, string){
         /* This method calls functions from a message block */
-
-        let header = "/"
         
         let listCommands = JSON.parse(Vars.tree.get("commands/commands.json").readString()).listCommands
 
@@ -232,6 +232,11 @@ const stuff = {
 
     printMethods() {
         Object.keys(methods).forEach(p => print(p))
+    },
+
+    setHeader(string, name) {
+        header = string
+        print("Command header: " + string)
     }
 }
 

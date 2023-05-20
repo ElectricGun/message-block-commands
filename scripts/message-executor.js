@@ -24,10 +24,11 @@ const stuff = {
 
     evalulateMessage (messageBlock, string){
         /* This method calls functions from a message block */
+
+        let header = "/"
         
         let listCommands = JSON.parse(Vars.tree.get("commands/commands.json").readString()).listCommands
 
-        const header = "#!/"
         const punctuation = [" ", "=", ","]
         const punctuationNames = ["space", "equals", "comma"]
 
@@ -169,7 +170,7 @@ const stuff = {
                         
                         messageBlock.message.delete(0, header.length)
                         if (debugMode) print(messageBlock + " Deleted")
-                        
+                            
                     }
                     return
                 }

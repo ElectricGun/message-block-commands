@@ -6,7 +6,7 @@ stuff
 Vars.tree.get("commands/commands.json").writeString('{"listCommands": []}')
 
 var methods = {}
-var debugMode = true
+var debugMode = false
 
 let header = "/"
 
@@ -36,8 +36,6 @@ const stuff = {
 
         let commandString = string.slice(header.length)
         let tokens = this.splitMulti(commandString, punctuation)
-        //messageBlock.message.delete(0, header.length)
-        //if (debugMode) print(messageBlock + " Deleted")
 
         // Parse tokens
 
@@ -55,8 +53,10 @@ const stuff = {
             }
         }
         commandRaw = commandRaw.filter((e) => {return e === 0 || e})    // remove cringe, if any
-        print(tokens)
-        print(commandRaw)
+        if (debugMode) {
+            print(tokens)
+            print(commandRaw)
+        }
 
         let commandName, expectNext, error
         let isArg = false
@@ -192,7 +192,7 @@ const stuff = {
                     print(messageBlock + " [ERROR]" + e)
                 }
             }
-            if (sus == false) {
+            if (sus == false && debugMode) {
                 print(e)
                 print(e.stack)
                 //print(messageBlock + " [ERROR] Message block command does not exist")

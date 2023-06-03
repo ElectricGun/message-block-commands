@@ -26,6 +26,10 @@ const stuff = {
 
     evalulateMessage (messageBlock, string){
         /* This method calls functions from a message block */
+
+        if (Vars.state.client || Vars.state.campaign) {
+        return
+        }
         
         let listCommands = JSON.parse(Vars.tree.get("commands/commands.json").readString()).listCommands
 

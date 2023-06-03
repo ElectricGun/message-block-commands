@@ -27,7 +27,7 @@ const stuff = {
     evalulateMessage (messageBlock, string){
         /* This method calls functions from a message block */
 
-        if (Vars.state.client || Vars.state.campaign) {
+        if (Vars.net.client()|| Vars.state.rules.sector) {
         return
         }
         

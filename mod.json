@@ -2,7 +2,7 @@ name: "message-block-commands"
 displayName: "Message Block Commands"
 author: "ElectricGun"
 description: ""
-version: "1.0"
+version: "1.3"
 repo: ""
 hidden: true
 minGameVersion: "138"

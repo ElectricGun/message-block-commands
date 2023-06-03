@@ -3,6 +3,6 @@ displayName: "Message Block Commands"
 author: "ElectricGun"
 description: ""
 version: "1.3"
-repo: ""
+repo: "electricgun/message-block-commands"
 hidden: true
 minGameVersion: "138"

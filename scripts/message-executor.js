@@ -58,8 +58,8 @@ const stuff = {
         }
         commandRaw = commandRaw.filter((e) => {return e === 0 || e})    // remove cringe, if any
         if (debugMode) {
-            print(tokens)
-            print(commandRaw)
+            Log.infoTag("Message-Executor", tokens)
+            Log.infoTag("Message-Executor", commandRaw)
         }
 
         let commandName, expectNext, error
@@ -98,9 +98,9 @@ const stuff = {
             } else {
                 if (debugMode) {
                     if (currToken != "space") {
-                        print("[Iteration] " + i + " [Expecting] " + expectNext + " [Prev Token ] " + prevToken + " [Current Token] " + currToken + " [Next Token ] " + nextToken + " [Is Arg] " + isArg)
+                        Log.infoTag("Message-Executor", "[Iteration] " + i + " [Expecting] " + expectNext + " [Prev Token ] " + prevToken + " [Current Token] " + currToken + " [Next Token ] " + nextToken + " [Is Arg] " + isArg)
                     } else (
-                        print("[Iteration] " + i + " Space")
+                        Log.infoTag("Message-Executor", "[Iteration] " + i + " Space")
                     )
                 }
             }
@@ -136,9 +136,9 @@ const stuff = {
         }
 
         if (error == undefined) {
-            if (debugMode) print(messageBlock + " Parsed command!")
+            if (debugMode) Log.infoTag("Message-Executor", messageBlock + " Parsed command!")
         } else {
-            if (debugMode) print(error)
+            if (debugMode) Log.infoTag("Message-Executor", error)
             return
         }
 
@@ -148,10 +148,10 @@ const stuff = {
             args.unshift(messageBlock)
             
             if (args.length < command.length) {
-                print(messageBlock + " [ERROR] " + "Missing arguments. " + "Expecting: " + (command.length - 1 ) + " Current: " + (args.length - 1))
+                Log.infoTag("Message-Executor", messageBlock + " [ERROR] " + "Missing arguments. " + "Expecting: " + (command.length - 1 ) + " Current: " + (args.length - 1))
                 return
             } else if (args.length > command.length) {
-                print(messageBlock + " [ERROR] " + "Too many arguments. " + "Expecting: " + (command.length - 1) + " Current: " + (args.length - 1))
+                Log.infoTag("Message-Executor", messageBlock + " [ERROR] " + "Too many arguments. " + "Expecting: " + (command.length - 1) + " Current: " + (args.length - 1))
                 return
             }
             try{
@@ -163,7 +163,7 @@ const stuff = {
                         if(true) {    //for later
                             
                             messageBlock.message.delete(0, header.length)
-                            if (debugMode) print(messageBlock + " Deleted")
+                            if (debugMode) Log.infoTag("Message-Executor", messageBlock + " Deleted")
                             
                         }
                 } else{
@@ -173,14 +173,14 @@ const stuff = {
                     if(true) {    //for later
                         
                         messageBlock.message.delete(0, header.length)
-                        if (debugMode) print(messageBlock + " Deleted")
+                        if (debugMode) Log.infoTag("Message-Executor", messageBlock + " Deleted")
                             
                     }
                     return
                 }
 
             } catch(exception){
-                if(debugMode) print(exception)
+                if(debugMode) Log.infoTag("Message-Executor", exception)
             }
         } catch(e) {
             var sus = false;
@@ -193,13 +193,13 @@ const stuff = {
                 })
             } catch (e) {
                 if (e !== BreakException) {
-                    print(messageBlock + " [ERROR]" + e)
+                    Log.infoTag("Message-Executor", messageBlock + " [ERROR]" + e)
                 }
             }
             if (sus == false && debugMode) {
-                print(e)
-                print(e.stack)
-                //print(messageBlock + " [ERROR] Message block command does not exist")
+                Log.infoTag("Message-Executor", e)
+                Log.infoTag("Message-Executor", e.stack)
+                //Log.infoTag("Message-Executor", messageBlock + " [ERROR] Message block command does not exist")
             }
         }
     },
@@ -231,16 +231,20 @@ const stuff = {
         let newObject = JSON.stringify(prevObject)
         Vars.tree.get("commands/commands.json").writeString(newObject)
 
-        if (debugMode) print("Added command " + name)
+        if (debugMode) Log.infoTag("Message-Executor", "Added command " + name)
     },
 
     printMethods() {
-        Object.keys(methods).forEach(p => print(p))
+        Object.keys(methods).forEach(p => Log.infoTag("Message-Executor", p))
     },
 
     setHeader(string, name) {
         header = string
-        print("Command header: " + string)
+        Log.infoTag(name, "Command header: " + string)
+    },
+
+    setDebugMode(bool) {
+        debugMode = !!bool
     }
 }
 

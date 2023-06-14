@@ -1,7 +1,7 @@
 name: "message-block-commands"
 displayName: "Message Block Commands"
 author: "ElectricGun"
-description: ""
+description: "[red[]] This mod does nothing by itself \nOnly install this mod to fulfil dependencies"
 version: "1.31"
 repo: "electricgun/message-block-commands"
 hidden: true

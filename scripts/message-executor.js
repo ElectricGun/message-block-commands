@@ -208,9 +208,9 @@ const stuff = {
 
         Vars.indexer.allBuildings(
 
-            Vars.world.width(), 
-            Vars.world.height(), 
-            Math.max(Vars.world.width(), Vars.world.height())*8, b => {
+            Vars.world.width() * 8 / 2, 
+            Vars.world.height() * 8 / 2, 
+            Math.max(Vars.world.width(), Vars.world.height())*9, b => {
 
                 if(b.block == "message") {
 
